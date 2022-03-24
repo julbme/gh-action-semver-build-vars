@@ -1,0 +1,4 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Julb.me :: GitHub action semver build vars,me.julb,Application,0,5,0,0,0,2,0,1,0,1
+Julb.me :: GitHub action semver build vars,me.julb.applications.github.actions,OutputVars,0,98,0,0,0,17,0,3,0,3
+Julb.me :: GitHub action semver build vars,me.julb.applications.github.actions,SemverBuildVarsGitHubAction,0,203,0,6,0,37,0,10,0,7

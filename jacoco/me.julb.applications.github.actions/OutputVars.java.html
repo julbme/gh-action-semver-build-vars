@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OutputVars.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Julb.me :: GitHub action semver build vars</a> &gt; <a href="index.source.html" class="el_package">me.julb.applications.github.actions</a> &gt; <span class="el_source">OutputVars.java</span></div><h1>OutputVars.java</h1><pre class="source lang-java linenums">package me.julb.applications.github.actions;
+
+/**
+ * The output variables. &lt;br&gt;
+ * @author Julb.
+ */
+<span class="fc" id="L7">enum OutputVars {</span>
+    /**
+     * The version.
+     */
+<span class="fc" id="L11">    ORIGINAL_VERSION(&quot;original_version&quot;),</span>
+
+    /**
+     * The version.
+     */
+<span class="fc" id="L16">    VERSION(&quot;version&quot;),</span>
+
+    /**
+     * The version with the sha as build number.
+     */
+<span class="fc" id="L21">    SHA_BUILD_VERSION(&quot;sha_build_version&quot;),</span>
+
+    /**
+     * The version with a timestamp.
+     */
+<span class="fc" id="L26">    TIMESTAMP_BUILD_VERSION(&quot;timestamp_build_version&quot;),</span>
+
+    /**
+     * The version with a timestamp and a SHAs.
+     */
+<span class="fc" id="L31">    TIMESTAMP_SHA_BUILD_VERSION(&quot;timestamp_sha_build_version&quot;),</span>
+
+    /**
+     * The SHA used to build the version number.
+     */
+<span class="fc" id="L36">    SHA_BUILD_VERSION_BUILD(&quot;sha_build_version_build&quot;),</span>
+
+    /**
+     * The timestamp used to build the version number.
+     */
+<span class="fc" id="L41">    TIMESTAMP_BUILD_VERSION_BUILD(&quot;timestamp_build_version_build&quot;),</span>
+
+    /**
+     * The timestamp/SHA used to build the version number.
+     */
+<span class="fc" id="L46">    TIMESTAMP_SHA_BUILD_VERSION_BUILD(&quot;timestamp_sha_build_version_build&quot;),</span>
+
+    /**
+     * The docker tag with the version number
+     */
+<span class="fc" id="L51">    DOCKER_TAG(&quot;docker_tag&quot;),</span>
+
+    /**
+     * The docker tag with the sha as build number.
+     */
+<span class="fc" id="L56">    DOCKER_SHA_BUILD_TAG(&quot;docker_sha_build_tag&quot;),</span>
+
+    /**
+     * The docker tag with a timestamp.
+     */
+<span class="fc" id="L61">    DOCKER_TIMESTAMP_BUILD_TAG(&quot;docker_timestamp_build_tag&quot;),</span>
+
+    /**
+     * The docker tag with a timestamp and a SHAs.
+     */
+<span class="fc" id="L66">    DOCKER_TIMESTAMP_SHA_BUILD_TAG(&quot;docker_timestamp_sha_build_tag&quot;);</span>
+
+    /**
+     * The variable name.
+     */
+    private String key;
+
+    /**
+     * Default constructor.
+     * @param key the key name.
+     */
+<span class="fc" id="L77">    private OutputVars(String key) {</span>
+<span class="fc" id="L78">        this.key = key;</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Getter for property key.
+     * @return Value of property key.
+     */
+    public String key() {
+<span class="fc" id="L86">        return key;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
