@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb.applications.github.actions;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,8 +65,7 @@ class SemverBuildVarsGitHubActionTest {
      * @throws java.lang.Exception
      */
     @BeforeEach
-    void setUp()
-        throws Exception {
+    void setUp() throws Exception {
         githubAction = new SemverBuildVarsGitHubAction();
         githubAction.setGhActionsKit(ghActionsKitMock);
     }
@@ -76,8 +74,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputPackageVersion_thenReturnValue()
-        throws Exception {
+    void whenGetInputPackageVersion_thenReturnValue() throws Exception {
         when(this.ghActionsKitMock.getInput("package_version")).thenReturn(Optional.of("1.0.0"));
 
         assertThat(this.githubAction.getInputPackageVersion()).contains("1.0.0");
@@ -89,8 +86,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputPackageVersionWithPrefix_thenReturnValue()
-        throws Exception {
+    void whenGetInputPackageVersionWithPrefix_thenReturnValue() throws Exception {
         when(this.ghActionsKitMock.getInput("package_version")).thenReturn(Optional.of("v1.0.0"));
 
         assertThat(this.githubAction.getInputPackageVersion()).contains("1.0.0");
@@ -114,8 +110,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetSemverVersion_thenReturnValidVersion()
-        throws Exception {
+    void whenGetSemverVersion_thenReturnValidVersion() throws Exception {
         var semver1 = this.githubAction.getSemverVersion("1.0.3-rc1+abcde1234");
         assertThat(semver1.getMajor()).isEqualTo(1);
         assertThat(semver1.getMinor()).isZero();
@@ -149,8 +144,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetSemverVersionInvalid_thenThrowIllegalArgumentException()
-        throws Exception {
+    void whenGetSemverVersionInvalid_thenThrowIllegalArgumentException() throws Exception {
         assertThrows(IllegalArgumentException.class, () -> this.githubAction.getSemverVersion("abcd"));
     }
 
@@ -158,8 +152,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetSemverVersionNull_thenThrowNullPointerException()
-        throws Exception {
+    void whenGetSemverVersionNull_thenThrowNullPointerException() throws Exception {
         assertThrows(NullPointerException.class, () -> this.githubAction.getSemverVersion(null));
     }
 
@@ -167,8 +160,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetCurrentTimestamp_thenReturnValue()
-        throws Exception {
+    void whenGetCurrentTimestamp_thenReturnValue() throws Exception {
         assertThat(this.githubAction.getCurrentTimestamp()).matches("^[0-9]{14}$");
     }
 
@@ -176,8 +168,7 @@ class SemverBuildVarsGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenExecute_thenReturnValidValues()
-        throws Exception {
+    void whenExecute_thenReturnValidValues() throws Exception {
         var spy = spy(this.githubAction);
 
         when(this.ghActionsKitMock.getGitHubAbbreviatedSha()).thenReturn("abcdef");
@@ -194,22 +185,26 @@ class SemverBuildVarsGitHubActionTest {
         verify(this.ghActionsKitMock).setOutput(OutputVars.VERSION.key(), "1.1.0-unstable");
         verify(this.ghActionsKitMock).setOutput(OutputVars.SHA_BUILD_VERSION.key(), "1.1.0-unstable+abcdef");
         verify(this.ghActionsKitMock).setOutput(OutputVars.SHA_BUILD_VERSION_BUILD.key(), "abcdef");
-        verify(this.ghActionsKitMock).setOutput(OutputVars.TIMESTAMP_BUILD_VERSION.key(), "1.1.0-unstable+20210101001122");
+        verify(this.ghActionsKitMock)
+                .setOutput(OutputVars.TIMESTAMP_BUILD_VERSION.key(), "1.1.0-unstable+20210101001122");
         verify(this.ghActionsKitMock).setOutput(OutputVars.TIMESTAMP_BUILD_VERSION_BUILD.key(), "20210101001122");
-        verify(this.ghActionsKitMock).setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION.key(), "1.1.0-unstable+20210101001122.abcdef");
-        verify(this.ghActionsKitMock).setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION_BUILD.key(), "20210101001122.abcdef");
+        verify(this.ghActionsKitMock)
+                .setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION.key(), "1.1.0-unstable+20210101001122.abcdef");
+        verify(this.ghActionsKitMock)
+                .setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION_BUILD.key(), "20210101001122.abcdef");
         verify(this.ghActionsKitMock).setOutput(OutputVars.DOCKER_TAG.key(), "1.1.0-unstable");
         verify(this.ghActionsKitMock).setOutput(OutputVars.DOCKER_SHA_BUILD_TAG.key(), "1.1.0-unstable+abcdef");
-        verify(this.ghActionsKitMock).setOutput(OutputVars.DOCKER_TIMESTAMP_BUILD_TAG.key(), "1.1.0-unstable+20210101001122");
-        verify(this.ghActionsKitMock).setOutput(OutputVars.DOCKER_TIMESTAMP_SHA_BUILD_TAG.key(), "1.1.0-unstable+20210101001122.abcdef");
+        verify(this.ghActionsKitMock)
+                .setOutput(OutputVars.DOCKER_TIMESTAMP_BUILD_TAG.key(), "1.1.0-unstable+20210101001122");
+        verify(this.ghActionsKitMock)
+                .setOutput(OutputVars.DOCKER_TIMESTAMP_SHA_BUILD_TAG.key(), "1.1.0-unstable+20210101001122.abcdef");
     }
 
     /**
      * Test method.
      */
     @Test
-    void whenExecuteWithError_thenThrowCompletionException()
-        throws Exception {
+    void whenExecuteWithError_thenThrowCompletionException() throws Exception {
         var spy = spy(this.githubAction);
 
         doThrow(RuntimeException.class).when(spy).getInputPackageVersion();

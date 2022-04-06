@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb.applications.github.actions;
-
-import com.vdurmont.semver4j.Semver;
-import com.vdurmont.semver4j.SemverException;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletionException;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.Setter;
-
 import org.apache.commons.lang3.ArrayUtils;
+
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.SemverException;
 
 import me.julb.sdk.github.actions.kit.GitHubActionsKit;
 import me.julb.sdk.github.actions.spi.GitHubActionProvider;
+
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * The action to compute SemVer build vars. <br>
@@ -86,7 +85,8 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
             var version = semverVersion.getValue();
             var versionWithSha = semverVersion.withBuild(sha).getValue();
             var versionWithTimestamp = semverVersion.withBuild(timestamp).getValue();
-            var versionWithTimestampAndSha = semverVersion.withBuild(timestampAndSha).getValue();
+            var versionWithTimestampAndSha =
+                    semverVersion.withBuild(timestampAndSha).getValue();
 
             // Set output variables.
             // -- release version
@@ -114,7 +114,10 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
      * @return the "package_version" input.
      */
     String getInputPackageVersion() {
-        return ghActionsKit.getInput("package_version").map(v -> v.replaceFirst("^v", "")).orElseThrow();
+        return ghActionsKit
+                .getInput("package_version")
+                .map(v -> v.replaceFirst("^v", ""))
+                .orElseThrow();
     }
 
     /**
@@ -127,7 +130,8 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
     Semver getSemverVersion(@NonNull String version) {
         try {
             var semverVersion = new Semver(version);
-            if (ArrayUtils.isNotEmpty(semverVersion.getSuffixTokens()) && SNAPSHOT_SUFFIX.equals(semverVersion.getSuffixTokens()[0])) {
+            if (ArrayUtils.isNotEmpty(semverVersion.getSuffixTokens())
+                    && SNAPSHOT_SUFFIX.equals(semverVersion.getSuffixTokens()[0])) {
                 semverVersion = semverVersion.withSuffix(UNSTABLE_SUFFIX);
             }
             return semverVersion;
@@ -141,6 +145,8 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
      * @return the current timestamp formatted.
      */
     String getCurrentTimestamp() {
-        return DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(ZoneId.of("UTC")).format(Instant.now());
+        return DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                .withZone(ZoneId.of("UTC"))
+                .format(Instant.now());
     }
 }

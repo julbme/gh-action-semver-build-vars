@@ -1,22 +1,39 @@
-name: Merge branch
-description: "Merge a branch, tag or commit to a branch in a given repository"
+name: SemVer build vars
+description: "Compute SemVer build vars."
 author: "julbme"
 branding:
-  icon: git-merge
+  icon: terminal
   color: blue
 inputs:
-  from:
-    description: "The ref from which to create the branch (branch, tag, ref or sha)."
-    required: false
-  to:
-    description: "The target branch name."
+  package_version:
+    description: "The build version defined in the package."
     required: true
-  message:
-    description: "The commit message."
-    required: false
 outputs:
-  sha:
-    description: "The merge commit SHA, or the target branch latest commit SHA if no merge is needed."
+  original_version:
+    description: "The original version."
+  version:
+    description: "The build version."
+  sha_build_version:
+    description: "The version with the abbreviated sha as build token."
+  sha_build_version_build:
+    description: "The abbreviated sha."
+  timestamp_build_version:
+    description: "The version with the UTC timestamp as build token."
+  timestamp_build_version_build:
+    description: "The UTC timestamp."
+  timestamp_sha_build_version:
+    description: "The version with the UTC timestamp and the SHA as build token."
+  timestamp_sha_build_version_build:
+    description: "The UTC timestamp and the SHA."
+  docker_tag:
+    description: "The docker tag."
+  docker_sha_build_tag:
+    description: "The docker tag with the abbreviated sha as build token."
+  docker_timestamp_build_tag:
+    description: "The docker tag with the UTC timestamp as build token."
+  docker_timestamp_sha_build_tag:
+    description: "The docker tag with the UTC timestamp and the SHA as build token."
+
 runs:
   using: "docker"
   image: "Dockerfile"
