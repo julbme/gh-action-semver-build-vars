@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletionException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -57,6 +58,11 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
     private static final String UNSTABLE_SUFFIX = "unstable";
 
     /**
+     * The pattern to match first "v" character.
+     */
+    private static final Pattern STARTS_WITH_V_PATTERN = Pattern.compile("^v");
+
+    /**
      * The GitHub action kit.
      */
     @Setter(AccessLevel.PACKAGE)
@@ -77,11 +83,12 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
             // Get release version
             var semverVersion = getSemverVersion(packageVersion);
 
-            // Parse version
+            // Compute potential build tokens
             var sha = ghActionsKit.getGitHubAbbreviatedSha();
             var timestamp = getCurrentTimestamp();
             var timestampAndSha = String.format("%s.%s", timestamp, sha);
 
+            // Build each potential version
             var version = semverVersion.getValue();
             var versionWithSha = semverVersion.withBuild(sha).getValue();
             var versionWithTimestamp = semverVersion.withBuild(timestamp).getValue();
@@ -116,7 +123,7 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
     String getInputPackageVersion() {
         return ghActionsKit
                 .getInput("package_version")
-                .map(v -> v.replaceFirst("^v", ""))
+                .map(v -> STARTS_WITH_V_PATTERN.matcher(v).replaceFirst(""))
                 .orElseThrow();
     }
 
@@ -145,6 +152,7 @@ public class SemverBuildVarsGitHubAction implements GitHubActionProvider {
      * @return the current timestamp formatted.
      */
     String getCurrentTimestamp() {
+        // The timezone should be set to UTC
         return DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                 .withZone(ZoneId.of("UTC"))
                 .format(Instant.now());
