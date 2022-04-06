@@ -21,25 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb.applications.github.actions;
-
-import com.vdurmont.semver4j.Semver;
-import com.vdurmont.semver4j.SemverException;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletionException;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.SemverException;
+
+import me.julb.sdk.github.actions.kit.GitHubActionsKit;
+import me.julb.sdk.github.actions.spi.GitHubActionProvider;
 
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.Setter;
-
-import org.apache.commons.lang3.ArrayUtils;
-
-import me.julb.sdk.github.actions.kit.GitHubActionsKit;
-import me.julb.sdk.github.actions.spi.GitHubActionProvider;
 
 /**
  * The action to compute SemVer build vars. &lt;br&gt;
@@ -58,9 +58,14 @@ import me.julb.sdk.github.actions.spi.GitHubActionProvider;
     private static final String UNSTABLE_SUFFIX = &quot;unstable&quot;;
 
     /**
+     * The pattern to match first &quot;v&quot; character.
+     */
+<span class="fc" id="L63">    private static final Pattern STARTS_WITH_V_PATTERN = Pattern.compile(&quot;^v&quot;);</span>
+
+    /**
      * The GitHub action kit.
      */
-<span class="fc" id="L63">    @Setter(AccessLevel.PACKAGE)</span>
+<span class="fc" id="L68">    @Setter(AccessLevel.PACKAGE)</span>
     private GitHubActionsKit ghActionsKit = GitHubActionsKit.INSTANCE;
 
     /**
@@ -70,42 +75,44 @@ import me.julb.sdk.github.actions.spi.GitHubActionProvider;
     public void execute() {
         try {
             // Get inputs
-<span class="fc" id="L73">            var packageVersion = getInputPackageVersion();</span>
+<span class="fc" id="L78">            var packageVersion = getInputPackageVersion();</span>
 
             // Trace parameters
-<span class="fc" id="L76">            ghActionsKit.debug(String.format(&quot;parameters: [package_version: %s]&quot;, packageVersion));</span>
+<span class="fc" id="L81">            ghActionsKit.debug(String.format(&quot;parameters: [package_version: %s]&quot;, packageVersion));</span>
 
             // Get release version
-<span class="fc" id="L79">            var semverVersion = getSemverVersion(packageVersion);</span>
+<span class="fc" id="L84">            var semverVersion = getSemverVersion(packageVersion);</span>
 
-            // Parse version
-<span class="fc" id="L82">            var sha = ghActionsKit.getGitHubAbbreviatedSha();</span>
-<span class="fc" id="L83">            var timestamp = getCurrentTimestamp();</span>
-<span class="fc" id="L84">            var timestampAndSha = String.format(&quot;%s.%s&quot;, timestamp, sha);</span>
+            // Compute potential build tokens
+<span class="fc" id="L87">            var sha = ghActionsKit.getGitHubAbbreviatedSha();</span>
+<span class="fc" id="L88">            var timestamp = getCurrentTimestamp();</span>
+<span class="fc" id="L89">            var timestampAndSha = String.format(&quot;%s.%s&quot;, timestamp, sha);</span>
 
-<span class="fc" id="L86">            var version = semverVersion.getValue();</span>
-<span class="fc" id="L87">            var versionWithSha = semverVersion.withBuild(sha).getValue();</span>
-<span class="fc" id="L88">            var versionWithTimestamp = semverVersion.withBuild(timestamp).getValue();</span>
-<span class="fc" id="L89">            var versionWithTimestampAndSha = semverVersion.withBuild(timestampAndSha).getValue();</span>
+            // Build each potential version
+<span class="fc" id="L92">            var version = semverVersion.getValue();</span>
+<span class="fc" id="L93">            var versionWithSha = semverVersion.withBuild(sha).getValue();</span>
+<span class="fc" id="L94">            var versionWithTimestamp = semverVersion.withBuild(timestamp).getValue();</span>
+<span class="fc" id="L95">            var versionWithTimestampAndSha =</span>
+<span class="fc" id="L96">                    semverVersion.withBuild(timestampAndSha).getValue();</span>
 
             // Set output variables.
             // -- release version
-<span class="fc" id="L93">            this.ghActionsKit.setOutput(OutputVars.ORIGINAL_VERSION.key(), packageVersion);</span>
-<span class="fc" id="L94">            this.ghActionsKit.setOutput(OutputVars.VERSION.key(), version);</span>
-<span class="fc" id="L95">            this.ghActionsKit.setOutput(OutputVars.SHA_BUILD_VERSION.key(), versionWithSha);</span>
-<span class="fc" id="L96">            this.ghActionsKit.setOutput(OutputVars.SHA_BUILD_VERSION_BUILD.key(), sha);</span>
-<span class="fc" id="L97">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_BUILD_VERSION.key(), versionWithTimestamp);</span>
-<span class="fc" id="L98">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_BUILD_VERSION_BUILD.key(), timestamp);</span>
-<span class="fc" id="L99">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION.key(), versionWithTimestampAndSha);</span>
-<span class="fc" id="L100">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION_BUILD.key(), timestampAndSha);</span>
-<span class="fc" id="L101">            this.ghActionsKit.setOutput(OutputVars.DOCKER_TAG.key(), version);</span>
-<span class="fc" id="L102">            this.ghActionsKit.setOutput(OutputVars.DOCKER_SHA_BUILD_TAG.key(), versionWithSha);</span>
-<span class="fc" id="L103">            this.ghActionsKit.setOutput(OutputVars.DOCKER_TIMESTAMP_BUILD_TAG.key(), versionWithTimestamp);</span>
-<span class="fc" id="L104">            this.ghActionsKit.setOutput(OutputVars.DOCKER_TIMESTAMP_SHA_BUILD_TAG.key(), versionWithTimestampAndSha);</span>
-<span class="fc" id="L105">        } catch (Exception e) {</span>
-<span class="fc" id="L106">            throw new CompletionException(e);</span>
-<span class="fc" id="L107">        }</span>
-<span class="fc" id="L108">    }</span>
+<span class="fc" id="L100">            this.ghActionsKit.setOutput(OutputVars.ORIGINAL_VERSION.key(), packageVersion);</span>
+<span class="fc" id="L101">            this.ghActionsKit.setOutput(OutputVars.VERSION.key(), version);</span>
+<span class="fc" id="L102">            this.ghActionsKit.setOutput(OutputVars.SHA_BUILD_VERSION.key(), versionWithSha);</span>
+<span class="fc" id="L103">            this.ghActionsKit.setOutput(OutputVars.SHA_BUILD_VERSION_BUILD.key(), sha);</span>
+<span class="fc" id="L104">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_BUILD_VERSION.key(), versionWithTimestamp);</span>
+<span class="fc" id="L105">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_BUILD_VERSION_BUILD.key(), timestamp);</span>
+<span class="fc" id="L106">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION.key(), versionWithTimestampAndSha);</span>
+<span class="fc" id="L107">            this.ghActionsKit.setOutput(OutputVars.TIMESTAMP_SHA_BUILD_VERSION_BUILD.key(), timestampAndSha);</span>
+<span class="fc" id="L108">            this.ghActionsKit.setOutput(OutputVars.DOCKER_TAG.key(), version);</span>
+<span class="fc" id="L109">            this.ghActionsKit.setOutput(OutputVars.DOCKER_SHA_BUILD_TAG.key(), versionWithSha);</span>
+<span class="fc" id="L110">            this.ghActionsKit.setOutput(OutputVars.DOCKER_TIMESTAMP_BUILD_TAG.key(), versionWithTimestamp);</span>
+<span class="fc" id="L111">            this.ghActionsKit.setOutput(OutputVars.DOCKER_TIMESTAMP_SHA_BUILD_TAG.key(), versionWithTimestampAndSha);</span>
+<span class="fc" id="L112">        } catch (Exception e) {</span>
+<span class="fc" id="L113">            throw new CompletionException(e);</span>
+<span class="fc" id="L114">        }</span>
+<span class="fc" id="L115">    }</span>
 
     // ------------------------------------------ Utility methods.
 
@@ -114,7 +121,10 @@ import me.julb.sdk.github.actions.spi.GitHubActionProvider;
      * @return the &quot;package_version&quot; input.
      */
     String getInputPackageVersion() {
-<span class="fc" id="L117">        return ghActionsKit.getInput(&quot;package_version&quot;).map(v -&gt; v.replaceFirst(&quot;^v&quot;, &quot;&quot;)).orElseThrow();</span>
+<span class="fc" id="L124">        return ghActionsKit</span>
+<span class="fc" id="L125">                .getInput(&quot;package_version&quot;)</span>
+<span class="fc" id="L126">                .map(v -&gt; STARTS_WITH_V_PATTERN.matcher(v).replaceFirst(&quot;&quot;))</span>
+<span class="fc" id="L127">                .orElseThrow();</span>
     }
 
     /**
@@ -124,15 +134,16 @@ import me.julb.sdk.github.actions.spi.GitHubActionProvider;
      * @return the semver object for that version.
      * @throws IllegalArgumentException if the version is not semver-valid.
      */
-<span class="fc bfc" id="L127" title="All 2 branches covered.">    Semver getSemverVersion(@NonNull String version) {</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">    Semver getSemverVersion(@NonNull String version) {</span>
         try {
-<span class="fc" id="L129">            var semverVersion = new Semver(version);</span>
-<span class="fc bfc" id="L130" title="All 4 branches covered.">            if (ArrayUtils.isNotEmpty(semverVersion.getSuffixTokens()) &amp;&amp; SNAPSHOT_SUFFIX.equals(semverVersion.getSuffixTokens()[0])) {</span>
-<span class="fc" id="L131">                semverVersion = semverVersion.withSuffix(UNSTABLE_SUFFIX);</span>
+<span class="fc" id="L139">            var semverVersion = new Semver(version);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            if (ArrayUtils.isNotEmpty(semverVersion.getSuffixTokens())</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">                    &amp;&amp; SNAPSHOT_SUFFIX.equals(semverVersion.getSuffixTokens()[0])) {</span>
+<span class="fc" id="L142">                semverVersion = semverVersion.withSuffix(UNSTABLE_SUFFIX);</span>
             }
-<span class="fc" id="L133">            return semverVersion;</span>
-<span class="fc" id="L134">        } catch (SemverException e) {</span>
-<span class="fc" id="L135">            throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L144">            return semverVersion;</span>
+<span class="fc" id="L145">        } catch (SemverException e) {</span>
+<span class="fc" id="L146">            throw new IllegalArgumentException(e);</span>
         }
     }
 
@@ -141,7 +152,10 @@ import me.julb.sdk.github.actions.spi.GitHubActionProvider;
      * @return the current timestamp formatted.
      */
     String getCurrentTimestamp() {
-<span class="fc" id="L144">        return DateTimeFormatter.ofPattern(&quot;yyyyMMddHHmmss&quot;).withZone(ZoneId.of(&quot;UTC&quot;)).format(Instant.now());</span>
+        // The timezone should be set to UTC
+<span class="fc" id="L156">        return DateTimeFormatter.ofPattern(&quot;yyyyMMddHHmmss&quot;)</span>
+<span class="fc" id="L157">                .withZone(ZoneId.of(&quot;UTC&quot;))</span>
+<span class="fc" id="L158">                .format(Instant.now());</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
